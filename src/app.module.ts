@@ -9,6 +9,9 @@ import { BaseController } from './base/base.controller';
 import { BaseService } from './base/base.service';
 import { JwtModule } from '@nestjs/jwt';
 import { APP_CONSTANTS } from './config/app.constants';
+import { FileUploadController } from './modules/file-upload/file-upload.controller';
+import { LeadController } from './modules/lead/lead.controller';
+import { LeadService } from './modules/lead/lead.service';
 
 @Module({
   imports: [
@@ -20,9 +23,15 @@ import { APP_CONSTANTS } from './config/app.constants';
       signOptions: { expiresIn: '7d' },
     }),
   ],
-  controllers: [AppController, BaseController],
+  controllers: [
+    AppController,
+    BaseController,
+    FileUploadController,
+    LeadController,
+  ],
   providers: [
     AppService,
+    LeadService,
     {
       provide: APP_INTERCEPTOR,
       useClass: ValidationMessageInterceptor,
