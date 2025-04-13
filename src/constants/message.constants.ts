@@ -6,6 +6,18 @@ export const USER_MESSAGES = {
   USER_EXISTS: 'User already exists with given email id',
   SIGN_UP: 'Account has been created successfully',
   INVALID_CREDENTIALS: 'Invalid credentials',
+  INVALID_ACCESS_CODE: 'Invalid access code',
+};
+
+export const ADMIN_MESSAGES = {
+  CREATED: 'Account has been created successfully',
+  DELETED: 'Account has been removed successfully',
+  NOT_FOUND: 'Admin not found with given email id',
+  SIGN_IN: "You've successfully signed in",
+  ADMIN_EXISTS: 'Admin already exists with given email id',
+  SIGN_UP: 'Account has been created successfully',
+  INVALID_CREDENTIALS: 'Invalid credentials',
+  INVALID_ACCESS_CODE: 'Invalid access code',
 };
 
 export const NOTE_MESSAGES = {
