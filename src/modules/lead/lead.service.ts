@@ -58,7 +58,9 @@ export class LeadService extends BaseService {
     const leadsFolderPath = path.join(leadsFolder, fileName);
 
     if (!fs.existsSync(tempFilePath)) {
-      throw new NotFoundException(`File ${fileName} not found in temp folder`);
+      // throw new NotFoundException(`File ${fileName} not found in temp folder`);
+      console.log(`File ${fileName} not found in temp folder`);
+      return;
     }
 
     try {
