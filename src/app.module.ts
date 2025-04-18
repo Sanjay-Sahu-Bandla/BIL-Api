@@ -12,6 +12,8 @@ import { APP_CONSTANTS } from './config/app.constants';
 import { FileUploadController } from './modules/file-upload/file-upload.controller';
 import { LeadController } from './modules/lead/lead.controller';
 import { LeadService } from './modules/lead/lead.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -21,6 +23,11 @@ import { LeadService } from './modules/lead/lead.service';
       global: true,
       secret: APP_CONSTANTS.JWT_SECRET_KEY,
       signOptions: { expiresIn: '7d' },
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'assets'),
+      serveRoot: '/assets/',
+      exclude: ['/api*'],
     }),
   ],
   controllers: [

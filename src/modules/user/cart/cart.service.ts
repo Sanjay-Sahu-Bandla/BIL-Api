@@ -27,9 +27,9 @@ export class CartService extends BaseService {
     });
   }
 
-  async findOne(id: string, userId: string) {
+  async findOne(leadId: string, userId: string) {
     const address = await this.cartRepository.findOne({
-      where: { id, user: { id: userId } },
+      where: { lead: { id: leadId }, user: { id: userId } },
       relations: ['user'],
     });
     if (!address) {
@@ -63,8 +63,8 @@ export class CartService extends BaseService {
     }
   }
 
-  async remove(id: string, userId: string) {
-    const address = await this.findOne(id, userId);
+  async remove(leadId: string, userId: string) {
+    const address = await this.findOne(leadId, userId);
     await this.cartRepository.remove(address);
   }
 }

@@ -31,13 +31,13 @@ export class CartController extends BaseController {
   async addToCart(@Body() createCartDto: CreateCartDto, @Req() req) {
     const userId = req.user.id;
     const newCartItem = await this.cartService.create(createCartDto, userId);
-    return this.sendResponse(newCartItem, 'Item added to cart successfully');
+    return this.sendResponse(newCartItem, 'Lead added to cart successfully');
   }
 
   @Delete(':id')
   async removeFromCart(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     await this.cartService.remove(id, userId);
-    return this.sendResponse(null, 'Item removed from the cart successfully');
+    return this.sendResponse(null, 'Lead removed from the cart successfully');
   }
 }

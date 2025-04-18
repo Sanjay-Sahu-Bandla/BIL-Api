@@ -5,3 +5,16 @@ export const APP_CONSTANTS = {
   MAX_NOTES_COUNT: 100,
   MAX_LABELS_COUNT: 20,
 };
+
+export const APP_DROPDOWNS = {
+  ADDRESS_TYPE_OPTIONS: [
+    { label: 'Home', value: 'home' },
+    { label: 'Office', value: 'office' },
+    { label: 'Others', value: 'others' },
+  ],
+  LOCATION_OPTIONS: [
+    { label: 'Loc 1', value: 1 },
+    { label: 'Loc 2', value: 2 },
+    { label: 'Loc 3', value: 3 },
+  ],
+};

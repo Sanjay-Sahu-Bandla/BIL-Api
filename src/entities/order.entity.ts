@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { OrderItemEntity } from './order-item.entity';
+import { AddressEntity } from './address.entity'; // Import AddressEntity
 
 @Entity('orders')
 export class OrderEntity {
@@ -39,6 +40,12 @@ export class OrderEntity {
     cascade: true,
   })
   orderItems: OrderItemEntity[];
+
+  @ManyToOne(() => AddressEntity, (address) => address.orders, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'addressId' })
+  address: AddressEntity;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

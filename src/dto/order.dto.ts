@@ -22,4 +22,8 @@ export class CreateBulkOrdersDto {
   @IsString()
   @IsNotEmpty()
   razorPayId?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  addressId: string;
 }

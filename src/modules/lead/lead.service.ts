@@ -9,6 +9,7 @@ import { LeadEntity } from 'src/entities/lead.entity';
 import { CreateLeadDto, UpdateLeadDto } from 'src/dto/lead.dto';
 import * as fs from 'fs';
 import * as path from 'path';
+import { APP_DROPDOWNS } from 'src/config/app.constants';
 
 @Injectable()
 export class LeadService extends BaseService {
@@ -20,11 +21,17 @@ export class LeadService extends BaseService {
   }
 
   async findAll() {
-    return this.leadRepository.find({ order: { updatedAt: 'DESC' } });
+    return await this.leadRepository.find({
+      relations: ['cart', 'favorites'],
+      order: { updatedAt: 'DESC' },
+    });
   }
 
   async findOne(id: string) {
-    const lead = await this.leadRepository.findOne({ where: { id } });
+    const lead = await this.leadRepository.findOne({
+      where: { id },
+      relations: ['cart', 'favorites'],
+    });
     if (!lead) {
       throw new NotFoundException(`Lead with ID ${id} not found`);
     }

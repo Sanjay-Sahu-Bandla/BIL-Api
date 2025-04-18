@@ -11,7 +11,7 @@ export class CreateLeadDto {
 
   @IsNotEmpty()
   @IsNumber()
-  location: number;
+  locationId: number;
 
   @IsNotEmpty()
   @IsString()
@@ -73,7 +73,7 @@ export class UpdateLeadDto {
 
   @IsNotEmpty()
   @IsNumber()
-  location: number;
+  locationId: number;
 
   @IsNotEmpty()
   @IsString()

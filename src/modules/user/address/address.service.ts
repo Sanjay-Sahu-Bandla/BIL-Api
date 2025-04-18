@@ -19,7 +19,7 @@ export class AddressService extends BaseService {
 
   async findAll(userId: string) {
     return this.addressRepository.find({
-      where: { id: userId },
+      where: { user: { id: userId } },
       order: { updatedAt: 'DESC' },
     });
   }

@@ -9,6 +9,8 @@ import { FavoriteController } from './favorite/favorite.controller';
 import { FavoriteService } from './favorite/favorite.service';
 import { OrderController } from './order/order.controller';
 import { OrderService } from './order/order.service';
+import { CartController } from './cart/cart.controller';
+import { CartService } from './cart/cart.service';
 
 @Module({
   providers: [
@@ -16,6 +18,7 @@ import { OrderService } from './order/order.service';
     AdminService,
     AddressService,
     FavoriteService,
+    CartService,
     OrderService,
   ],
   controllers: [
@@ -23,6 +26,7 @@ import { OrderService } from './order/order.service';
     AdminController,
     AddressController,
     FavoriteController,
+    CartController,
     OrderController,
   ],
 })

@@ -8,24 +8,26 @@ import { BaseService } from 'src/base/base.service';
 import { OrderEntity } from 'src/entities/order.entity';
 import { CreateBulkOrdersDto, CreateOrderDto } from 'src/dto/order.dto';
 import { LeadEntity } from 'src/entities/lead.entity';
+import { CartEntity } from 'src/entities/cart.entity';
 
 @Injectable()
 export class OrderService extends BaseService {
   private orderRepository: Repository<OrderEntity>;
   private leadRepository: Repository<LeadEntity>;
+  private cartRepository: Repository<CartEntity>;
 
   constructor(private dataSource: DataSource) {
     super();
     this.orderRepository = this.dataSource.getRepository(OrderEntity);
     this.leadRepository = this.dataSource.getRepository(LeadEntity);
+    this.cartRepository = this.dataSource.getRepository(CartEntity);
   }
-
   async findAll(userId: string) {
     return await this.orderRepository.find({
       where: {
         user: { id: userId },
       },
-      relations: ['orderItems'],
+      relations: ['orderItems', 'orderItems.lead', 'address'],
       order: { updatedAt: 'DESC' },
     });
   }
@@ -104,6 +106,7 @@ export class OrderService extends BaseService {
 
     const bulkOrders = this.orderRepository.create({
       user: { id: userId },
+      address: { id: createBulkOrderDto.addressId },
       razorPayId: createBulkOrderDto.razorPayId,
       subtotal,
       gst,
@@ -113,7 +116,9 @@ export class OrderService extends BaseService {
     });
 
     try {
-      return await this.orderRepository.save(bulkOrders);
+      const placedOrders = await this.orderRepository.save(bulkOrders);
+      this.cartRepository.delete({ user: { id: userId } });
+      return placedOrders;
     } catch (error) {
       throw new InternalServerErrorException('Failed to place bulk orders');
     }

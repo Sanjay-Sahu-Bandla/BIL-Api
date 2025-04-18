@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { OrderEntity } from './order.entity';
 import { LeadEntity } from './lead.entity';
+import { Expose } from 'class-transformer';
 
 @Entity('order_items')
 export class OrderItemEntity {
@@ -19,6 +20,7 @@ export class OrderItemEntity {
   @JoinColumn({ name: 'orderId' })
   order: OrderEntity;
 
+  @Expose()
   @ManyToOne(() => LeadEntity, (lead) => lead.id, {
     onDelete: 'CASCADE',
   })
