@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { UserEntity } from './user.entity'; // Adjust the import path as needed
 
 @Entity('addresses')
 export class AddressEntity {
@@ -47,4 +54,10 @@ export class AddressEntity {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @ManyToOne(() => UserEntity, (user) => user.addresses, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity;
 }

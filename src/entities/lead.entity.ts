@@ -1,4 +1,6 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { FavoriteEntity } from './favorite.entity';
+import { CartEntity } from './cart.entity';
 
 @Entity('leads')
 export class LeadEntity {
@@ -59,4 +61,14 @@ export class LeadEntity {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt: Date;
+
+  @OneToMany(() => FavoriteEntity, (favorite) => favorite.lead, {
+    cascade: true,
+  })
+  favorites: FavoriteEntity[];
+
+  @OneToMany(() => CartEntity, (cart) => cart.lead, {
+    cascade: true,
+  })
+  cart: CartEntity[];
 }
