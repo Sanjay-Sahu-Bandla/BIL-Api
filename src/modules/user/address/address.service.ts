@@ -17,19 +17,29 @@ export class AddressService extends BaseService {
     this.addressRepository = this.dataSource.getRepository(AddressEntity);
   }
 
-  async findAll() {
-    return this.addressRepository.find({ order: { updatedAt: 'DESC' } });
+  async findAll(userId: string) {
+    return this.addressRepository.find({
+      where: { id: userId },
+      order: { updatedAt: 'DESC' },
+    });
   }
 
-  async findOne(id: string) {
-    const address = await this.addressRepository.findOne({ where: { id } });
+  async findOne(id: string, userId: string) {
+    const address = await this.addressRepository.findOne({
+      where: { id, user: { id: userId } },
+      relations: ['user'],
+    });
     if (!address) {
-      throw new NotFoundException(`Address with ID ${id} not found`);
+      throw new NotFoundException(`Address not found`);
     }
     return address;
   }
-  async create(createAddressDto: CreateAddressDto) {
-    const address = this.addressRepository.create(createAddressDto);
+
+  async create(createAddressDto: CreateAddressDto, userId: string) {
+    const address = this.addressRepository.create({
+      ...createAddressDto,
+      user: { id: userId },
+    });
     try {
       return await this.addressRepository.save(address);
     } catch (error) {
@@ -37,8 +47,8 @@ export class AddressService extends BaseService {
     }
   }
 
-  async update(id: string, updateAddressDto: UpdateAddressDto) {
-    const address = await this.findOne(id);
+  async update(id: string, updateAddressDto: UpdateAddressDto, userId: string) {
+    const address = await this.findOne(id, userId);
     const updatedAddress = this.addressRepository.merge(
       address,
       updateAddressDto,
@@ -46,8 +56,8 @@ export class AddressService extends BaseService {
     return this.addressRepository.save(updatedAddress);
   }
 
-  async remove(id: string) {
-    const address = await this.findOne(id);
+  async remove(id: string, userId: string) {
+    const address = await this.findOne(id, userId);
     await this.addressRepository.remove(address);
   }
 }
