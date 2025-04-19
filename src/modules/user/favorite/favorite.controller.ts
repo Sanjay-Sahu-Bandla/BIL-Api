@@ -24,7 +24,7 @@ export class FavoriteController extends BaseController {
   async getAllFavorites(@Req() req) {
     const userId = req.user.id;
     const favorites = await this.favoriteService.findAll(userId);
-    return this.sendResponse(favorites, 'Favorites retrieved successfully');
+    return this.sendResponse(favorites, 'Wishlist retrieved successfully');
   }
 
   @Post()
@@ -37,13 +37,16 @@ export class FavoriteController extends BaseController {
       createFavoriteDto,
       userId,
     );
-    return this.sendResponse(newFavorite, 'Favorite created successfully');
+    return this.sendResponse(
+      newFavorite,
+      'Lead added to wishlist successfully',
+    );
   }
 
   @Delete(':id')
   async deleteFavorite(@Param('id') id: string, @Req() req) {
     const userId = req.user.id;
     await this.favoriteService.remove(id, userId);
-    return this.sendResponse(null, 'Favorite deleted successfully');
+    return this.sendResponse(null, 'Lead removed from wishlist successfully');
   }
 }

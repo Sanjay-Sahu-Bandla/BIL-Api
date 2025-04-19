@@ -12,6 +12,9 @@ import { BaseService } from 'src/base/base.service';
 // import bcrypt from 'bcrypt'
 import * as bcrypt from 'bcrypt';
 import { USER_MESSAGES } from 'src/constants/message.constants';
+import { CartEntity } from 'src/entities/cart.entity';
+import { FavoriteEntity } from 'src/entities/favorite.entity';
+import { OrderEntity } from 'src/entities/order.entity';
 
 @Injectable()
 export class UserService extends BaseService {
@@ -46,6 +49,33 @@ export class UserService extends BaseService {
 
   validatePassword(password: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword);
+  }
+
+  async getUserStats(userId: string) {
+    try {
+      const totalOrders = await this.dataSource
+        .getRepository(OrderEntity) // Replace 'OrderEntity' with the actual Order entity
+        .count({ where: { user: { id: userId } } });
+
+      const totalWishlistItems = await this.dataSource
+        .getRepository(FavoriteEntity) // Replace 'FavoriteEntity' with the actual Favorite entity
+        .count({ where: { user: { id: userId } } });
+
+      const totalCartItems = await this.dataSource
+        .getRepository(CartEntity) // Replace 'CartItemEntity' with the actual CartItem entity
+        .count({ where: { user: { id: userId } } });
+
+      return {
+        totalOrders,
+        totalWishlistItems,
+        totalCartItems,
+      };
+    } catch (err) {
+      this.logger.error(err.message, err.stack);
+      throw new InternalServerErrorException(
+        'Failed to fetch user stats, Try again!',
+      );
+    }
   }
 
   async delete(id: string) {

@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { BaseController } from 'src/base/base.controller';
 import { JwtUserGuard } from 'src/guards/auth/user.guard';
 import { OrderService } from './order.service';
-import { CreateBulkOrdersDto, CreateOrderDto } from 'src/dto/order.dto';
+import { CreateOrdersDto } from 'src/dto/order.dto';
 
 @UseGuards(JwtUserGuard)
 @Controller('order')
@@ -19,19 +19,9 @@ export class OrderController extends BaseController {
   }
 
   @Post()
-  async addOrder(@Body() createOrderDto: CreateOrderDto, @Req() req) {
+  async addOrder(@Body() createBulkOrderDto: CreateOrdersDto, @Req() req) {
     const userId = req.user.id;
-    const newCartItem = await this.orderService.create(createOrderDto, userId);
-    return this.sendResponse(newCartItem, 'Order placed successfully');
-  }
-
-  @Post('bulk')
-  async addBulkOrder(
-    @Body() createBulkOrderDto: CreateBulkOrdersDto,
-    @Req() req,
-  ) {
-    const userId = req.user.id;
-    const newCartItem = await this.orderService.createBulk(
+    const newCartItem = await this.orderService.create(
       createBulkOrderDto,
       userId,
     );

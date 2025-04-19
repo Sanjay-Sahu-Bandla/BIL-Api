@@ -6,7 +6,7 @@ import {
 import { DataSource, Repository } from 'typeorm';
 import { BaseService } from 'src/base/base.service';
 import { OrderEntity } from 'src/entities/order.entity';
-import { CreateBulkOrdersDto, CreateOrderDto } from 'src/dto/order.dto';
+import { CreateOrdersDto } from 'src/dto/order.dto';
 import { LeadEntity } from 'src/entities/lead.entity';
 import { CartEntity } from 'src/entities/cart.entity';
 
@@ -42,41 +42,7 @@ export class OrderService extends BaseService {
     return order;
   }
 
-  async create(createOrderDto: CreateOrderDto, userId: string) {
-    const leadInfo = await this.leadRepository.findOne({
-      where: { id: createOrderDto.leadId },
-    });
-
-    if (!leadInfo) {
-      throw new NotFoundException('Lead not found');
-    }
-
-    const subtotal = leadInfo.price * createOrderDto.quantity;
-    const gst = Math.round(0.18 * subtotal * 100) / 100; // Rounds to 2 decimal places
-    const total = subtotal + gst;
-
-    const order = this.orderRepository.create({
-      user: { id: userId },
-      razorPayId: createOrderDto.razorPayId,
-      subtotal,
-      gst,
-      total,
-      orderItems: [
-        {
-          lead: { id: createOrderDto.leadId },
-          price: leadInfo.price,
-          quantity: createOrderDto.quantity,
-        },
-      ],
-    });
-
-    try {
-      return await this.orderRepository.save(order);
-    } catch (error) {
-      throw new InternalServerErrorException('Failed to place order');
-    }
-  }
-  async createBulk(createBulkOrderDto: CreateBulkOrdersDto, userId: string) {
+  async create(createBulkOrderDto: CreateOrdersDto, userId: string) {
     const ordersToSave = [];
 
     for (const orderInfo of createBulkOrderDto.orders) {

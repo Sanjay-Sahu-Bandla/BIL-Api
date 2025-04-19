@@ -22,20 +22,20 @@ export class FavoriteService extends BaseService {
       where: {
         user: { id: userId },
       },
-      relations: ['lead'],
+      relations: ['lead', 'lead.favorites'],
       order: { updatedAt: 'DESC' },
     });
   }
 
-  async findOne(id: string, userId: string) {
-    const address = await this.favoriteRepository.findOne({
-      where: { id, user: { id: userId } },
+  async findOne(leadId: string, userId: string) {
+    const favoriteItem = await this.favoriteRepository.findOne({
+      where: { lead: { id: leadId }, user: { id: userId } },
       relations: ['user'],
     });
-    if (!address) {
+    if (!favoriteItem) {
       throw new NotFoundException(`Favorite not found`);
     }
-    return address;
+    return favoriteItem;
   }
 
   async create(createFavoriteDto: CreateFavoriteDto, userId: string) {
@@ -65,8 +65,8 @@ export class FavoriteService extends BaseService {
     }
   }
 
-  async remove(id: string, userId: string) {
-    const address = await this.findOne(id, userId);
-    await this.favoriteRepository.remove(address);
+  async remove(leadId: string, userId: string) {
+    const favoriteItem = await this.findOne(leadId, userId);
+    await this.favoriteRepository.remove(favoriteItem);
   }
 }

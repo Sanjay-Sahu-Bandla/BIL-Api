@@ -9,15 +9,9 @@ export class OrderDto {
   @IsInt()
   quantity: number;
 }
-
-export class CreateOrderDto extends OrderDto {
-  @IsString()
+export class CreateOrdersDto {
   @IsNotEmpty()
-  razorPayId?: string;
-}
-export class CreateBulkOrdersDto {
-  @IsNotEmpty()
-  orders: CreateOrderDto[];
+  orders: OrderDto[];
 
   @IsString()
   @IsNotEmpty()

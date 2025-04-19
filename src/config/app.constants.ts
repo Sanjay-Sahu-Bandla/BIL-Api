@@ -13,8 +13,8 @@ export const APP_DROPDOWNS = {
     { label: 'Others', value: 'others' },
   ],
   LOCATION_OPTIONS: [
-    { label: 'Loc 1', value: 1 },
-    { label: 'Loc 2', value: 2 },
-    { label: 'Loc 3', value: 3 },
+    { label: 'Hyderabad', value: 1 },
+    { label: 'Telangana', value: 2 },
+    { label: 'Andhra Pradesh', value: 3 },
   ],
 };

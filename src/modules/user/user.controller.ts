@@ -45,28 +45,29 @@ export class UserController extends BaseController {
       email: existingUser.email,
       username: existingUser.username,
     };
+
+    // Fetch user stats
+    const stats = await this.userService.getUserStats(existingUser.id);
+
     const token = await this.jwtService.signAsync({
       sub: existingUser.id,
       ...userData,
     });
 
     return this.sendResponse(
-      { ...userData, accessToken: token },
+      { ...userData, accessToken: token, stats },
       USER_MESSAGES.SIGN_IN,
     );
   }
 
   @Post('sign-up')
   async registerUser(@Body() payload: CreateUserDto) {
-    console.log('payload', payload);
     const existingUser = await this.userService.findOne(payload.email);
-    console.log('existingUser', existingUser);
     if (existingUser) {
       throw new ConflictException(USER_MESSAGES.USER_EXISTS);
     }
 
     const newUser = await this.userService.create(payload);
-    console.log('newUser', newUser);
     const userData = {
       id: newUser.id,
       email: newUser.email,
