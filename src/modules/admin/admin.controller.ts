@@ -2,14 +2,17 @@ import {
   Body,
   ConflictException,
   Controller,
+  Get,
   NotFoundException,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { BaseController } from 'src/base/base.controller';
 import { ADMIN_MESSAGES } from 'src/constants/message.constants';
 import { JwtService } from '@nestjs/jwt';
 import { SigninAdminDto, SignUpAdminDto } from 'src/dto/admin.dto';
+import { JwtAdminGuard } from 'src/guards/auth/admin.guard';
 
 @Controller('admin')
 export class AdminController extends BaseController {
@@ -41,18 +44,22 @@ export class AdminController extends BaseController {
       email: existingAdmin.email,
     };
 
-    // Fetch admin stats
-    const stats = await this.adminService.getAdminStats();
-
     const token = await this.jwtService.signAsync({
       sub: existingAdmin.id,
       ...userData,
     });
 
     return this.sendResponse(
-      { ...userData, accessToken: token, stats },
+      { ...userData, accessToken: token },
       ADMIN_MESSAGES.SIGN_IN,
     );
+  }
+
+  @UseGuards(JwtAdminGuard)
+  @Get('stats')
+  async getAdminStats() {
+    const stats = await this.adminService.getAdminStats();
+    return this.sendResponse(stats);
   }
 
   @Post('sign-up')

@@ -3,6 +3,7 @@ import {
   ConflictException,
   Controller,
   Delete,
+  Get,
   NotFoundException,
   Post,
   Req,
@@ -45,9 +46,6 @@ export class UserController extends BaseController {
       email: existingUser.email,
       username: existingUser.username,
     };
-
-    // Fetch user stats
-    const stats = await this.userService.getUserStats(existingUser.id);
     // Fetch list of lead IDs bought by the user
     const purchasedLeadIds = await this.userService.getUserLeadIds(
       existingUser.id,
@@ -59,7 +57,7 @@ export class UserController extends BaseController {
     });
 
     return this.sendResponse(
-      { ...userData, accessToken: token, stats, purchasedLeadIds },
+      { ...userData, accessToken: token, purchasedLeadIds },
       USER_MESSAGES.SIGN_IN,
     );
   }
@@ -92,6 +90,13 @@ export class UserController extends BaseController {
       { ...userData, accessToken: token, stats, purchasedLeadIds },
       USER_MESSAGES.SIGN_UP,
     );
+  }
+
+  @UseGuards(JwtUserGuard)
+  @Get('stats')
+  async getUserStats(@Req() req) {
+    const stats = await this.userService.getUserStats(req.user.id);
+    return this.sendResponse(stats);
   }
 
   @UseGuards(JwtUserGuard)
