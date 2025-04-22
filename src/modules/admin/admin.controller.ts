@@ -40,13 +40,17 @@ export class AdminController extends BaseController {
       id: existingAdmin.id,
       email: existingAdmin.email,
     };
+
+    // Fetch admin stats
+    const stats = await this.adminService.getAdminStats();
+
     const token = await this.jwtService.signAsync({
       sub: existingAdmin.id,
       ...userData,
     });
 
     return this.sendResponse(
-      { ...userData, accessToken: token },
+      { ...userData, accessToken: token, stats },
       ADMIN_MESSAGES.SIGN_IN,
     );
   }

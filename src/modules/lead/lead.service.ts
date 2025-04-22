@@ -9,7 +9,6 @@ import { LeadEntity } from 'src/entities/lead.entity';
 import { CreateLeadDto, UpdateLeadDto } from 'src/dto/lead.dto';
 import * as fs from 'fs';
 import * as path from 'path';
-import { APP_DROPDOWNS } from 'src/config/app.constants';
 
 @Injectable()
 export class LeadService extends BaseService {
@@ -20,7 +19,17 @@ export class LeadService extends BaseService {
     this.leadRepository = this.dataSource.getRepository(LeadEntity);
   }
 
-  async findAll() {
+  async findAll(req: any) {
+    const locationId = req?.query?.locationId
+      ? Number(req.query.locationId)
+      : null;
+    if (locationId) {
+      return await this.leadRepository.find({
+        where: { locationId: locationId, status: 'available' },
+        relations: ['cart', 'favorites'],
+        order: { updatedAt: 'DESC' },
+      });
+    }
     return await this.leadRepository.find({
       relations: ['cart', 'favorites'],
       order: { updatedAt: 'DESC' },
@@ -39,9 +48,12 @@ export class LeadService extends BaseService {
   }
 
   async create(createLeadDto: CreateLeadDto) {
-    const address = this.leadRepository.create(createLeadDto);
+    const lead = this.leadRepository.create({
+      ...createLeadDto,
+      availableQty: createLeadDto.stockQty,
+    });
     try {
-      const leadInfo = await this.leadRepository.save(address);
+      const leadInfo = await this.leadRepository.save(lead);
       this.moveLeadImage(leadInfo);
       return leadInfo;
     } catch (error) {
@@ -109,5 +121,76 @@ export class LeadService extends BaseService {
     const lead = await this.findOne(id);
     this.removeLeadImage(lead);
     await this.leadRepository.remove(lead);
+  }
+
+  async getOrderStats() {
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      const totalPurchasedLeads = await queryRunner.manager
+        .createQueryBuilder('order_items', 'oi')
+        .select('COUNT(DISTINCT oi.leadId)', 'count')
+        .getRawOne();
+
+      const totalCustomers = await queryRunner.manager
+        .createQueryBuilder('orders', 'o')
+        .select('COUNT(DISTINCT o.userId)', 'count')
+        .getRawOne();
+
+      const totalRevenue = await queryRunner.manager
+        .createQueryBuilder('orders', 'o')
+        .select('SUM(o.total)', 'sum')
+        .getRawOne();
+
+      const totalOrders = await queryRunner.manager
+        .createQueryBuilder('orders', 'o')
+        .select('COUNT(o.id)', 'count')
+        .getRawOne();
+
+      return {
+        totalPurchasedLeads: totalPurchasedLeads?.count || 0,
+        totalCustomers: totalCustomers?.count || 0,
+        totalRevenue: totalRevenue?.sum || 0,
+        totalOrders: totalOrders?.count || 0,
+      };
+    } catch (error) {
+      console.error('Failed to fetch order stats:', error);
+      throw new InternalServerErrorException('Failed to fetch order stats');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async getCustomerOrders() {
+    const queryRunner = this.dataSource.createQueryRunner();
+    try {
+      await queryRunner.connect();
+      const customerOrders = await queryRunner.manager
+        .createQueryBuilder('order_items', 'oi')
+        .innerJoin('leads', 'l', 'oi.leadId = l.id')
+        .innerJoin('orders', 'o', 'oi.orderId = o.id')
+        .innerJoin('users', 'u', 'o.userId = u.id')
+        .innerJoin('addresses', 'a', 'o.addressId = a.id')
+        .select([
+          'l.id AS leadId',
+          'l.name AS leadName',
+          'u.id AS userId',
+          'u.username AS username',
+          'u.email AS userEmail',
+          'oi.price AS basePrice',
+          'ROUND(oi.price * 1.18, 2) AS purchasedAmount', // Including 18% GST, rounded to 2 decimals
+          'o.createdAt AS purchasedDate',
+          `CONCAT(a.streetAddress, ', ', a.city, ', ', a.postcode, ', ', a.state) AS deliveredAddress`,
+          'a.phone AS deliveryPhoneNumber', // Added delivery phone number
+        ])
+        .getRawMany();
+
+      return customerOrders;
+    } catch (error) {
+      console.error('Failed to fetch customer orders:', error);
+      throw new InternalServerErrorException('Failed to fetch customer orders');
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

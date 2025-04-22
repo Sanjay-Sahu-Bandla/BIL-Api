@@ -15,9 +15,5 @@ export class CreateOrdersDto {
 
   @IsString()
   @IsNotEmpty()
-  razorPayId?: string;
-
-  @IsString()
-  @IsNotEmpty()
   addressId: string;
 }

@@ -48,6 +48,10 @@ export class UserController extends BaseController {
 
     // Fetch user stats
     const stats = await this.userService.getUserStats(existingUser.id);
+    // Fetch list of lead IDs bought by the user
+    const purchasedLeadIds = await this.userService.getUserLeadIds(
+      existingUser.id,
+    );
 
     const token = await this.jwtService.signAsync({
       sub: existingUser.id,
@@ -55,7 +59,7 @@ export class UserController extends BaseController {
     });
 
     return this.sendResponse(
-      { ...userData, accessToken: token, stats },
+      { ...userData, accessToken: token, stats, purchasedLeadIds },
       USER_MESSAGES.SIGN_IN,
     );
   }
@@ -73,13 +77,19 @@ export class UserController extends BaseController {
       email: newUser.email,
       username: newUser.username,
     };
+
+    // Fetch user stats
+    const stats = await this.userService.getUserStats(newUser.id);
+    // Fetch list of lead IDs bought by the user
+    const purchasedLeadIds = await this.userService.getUserLeadIds(newUser.id);
+
     const token = await this.jwtService.signAsync({
       sub: newUser.id,
       ...userData,
     });
 
     return this.sendResponse(
-      { ...userData, accessToken: token },
+      { ...userData, accessToken: token, stats, purchasedLeadIds },
       USER_MESSAGES.SIGN_UP,
     );
   }

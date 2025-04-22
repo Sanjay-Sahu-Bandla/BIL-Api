@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CreateLeadDto {
   @IsNotEmpty()
@@ -26,8 +26,8 @@ export class CreateLeadDto {
   serviceRequiredOn: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  budget: number;
+  @IsString()
+  budget: string;
 
   @IsNotEmpty()
   @IsString()
@@ -39,19 +39,27 @@ export class CreateLeadDto {
 
   @IsNotEmpty()
   @IsString()
-  tags: string;
-
-  @IsNotEmpty()
-  @IsString()
   mobile: string;
+
+  @IsOptional()
+  @IsString()
+  whatsAppMobile: string;
 
   @IsNotEmpty()
   @IsNumber()
-  price: number;
+  actualPrice: number;
 
   @IsNotEmpty()
   @IsNumber()
   discountPrice: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  sellingPrice: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  stockQty: number;
 
   @IsNotEmpty()
   @IsString()
@@ -88,8 +96,8 @@ export class UpdateLeadDto {
   serviceRequiredOn: string;
 
   @IsNotEmpty()
-  @IsNumber()
-  budget: number;
+  @IsString()
+  budget: string;
 
   @IsNotEmpty()
   @IsString()
@@ -101,19 +109,27 @@ export class UpdateLeadDto {
 
   @IsNotEmpty()
   @IsString()
-  tags: string;
-
-  @IsNotEmpty()
-  @IsString()
   mobile: string;
+
+  @IsOptional()
+  @IsString()
+  whatsAppMobile: string;
 
   @IsNotEmpty()
   @IsNumber()
-  price: number;
+  actualPrice: number;
 
   @IsNotEmpty()
   @IsNumber()
   discountPrice: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  sellingPrice: number;
+
+  @IsNotEmpty()
+  @IsNumber()
+  stockQty: number;
 
   @IsNotEmpty()
   @IsString()

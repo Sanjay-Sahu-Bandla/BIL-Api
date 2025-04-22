@@ -21,8 +21,11 @@ export class OrderEntity {
   @JoinColumn({ name: 'userId' })
   user: UserEntity;
 
-  @Column({ type: 'varchar', length: 255, nullable: false, unique: true })
+  @Column({ nullable: true })
   razorPayId: string;
+
+  @Column({ nullable: true })
+  razorPayPaymentId: string;
 
   @Column({ type: 'decimal', precision: 10, scale: 2, nullable: false })
   subtotal: number;

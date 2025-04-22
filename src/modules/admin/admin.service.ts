@@ -10,6 +10,8 @@ import * as bcrypt from 'bcrypt';
 import { ADMIN_MESSAGES } from 'src/constants/message.constants';
 import { AdminEntity } from 'src/entities/admin.entity';
 import { SignUpAdminDto } from 'src/dto/admin.dto';
+import { OrderEntity } from 'src/entities/order.entity';
+import { LeadEntity } from 'src/entities/lead.entity';
 
 @Injectable()
 export class AdminService extends BaseService {
@@ -56,5 +58,27 @@ export class AdminService extends BaseService {
 
   validatePassword(password: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(password, hashedPassword);
+  }
+
+  async getAdminStats() {
+    try {
+      const totalOrders = await this.dataSource
+        .getRepository(OrderEntity) // Replace 'OrderEntity' with the actual Order entity
+        .count();
+
+      const totalLeads = await this.dataSource
+        .getRepository(LeadEntity) // Replace 'LeadEntity' with the actual Lead entity
+        .count();
+
+      return {
+        totalOrders,
+        totalLeads,
+      };
+    } catch (err) {
+      this.logger.error(err.message, err.stack);
+      throw new InternalServerErrorException(
+        'Failed to fetch admin stats, Try again!',
+      );
+    }
   }
 }

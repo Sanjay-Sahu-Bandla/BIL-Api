@@ -21,34 +21,46 @@ export class LeadEntity {
   locationId: number;
 
   @Column()
+  area: string;
+
+  @Column()
   propertyType: string;
 
   @Column()
   propertyStatus: string;
 
-  @Column({ type: 'date' })
+  @Column()
   serviceRequiredOn: string;
 
   @Column()
-  budget: number;
+  budget: string;
 
   @Column()
   country: string;
 
-  @Column()
+  @Column({ type: 'text' })
   requirement: string;
-
-  @Column()
-  tags: string;
 
   @Column()
   mobile: string;
 
   @Column()
-  price: number;
+  whatsAppMobile: string;
+
+  @Column()
+  actualPrice: number;
+
+  @Column()
+  sellingPrice: number;
 
   @Column()
   discountPrice: number;
+
+  @Column({ type: 'int', default: 1 })
+  stockQty: number;
+
+  @Column({ type: 'int' })
+  availableQty: number;
 
   @Column()
   addressType: string;
@@ -97,14 +109,12 @@ export class LeadEntity {
   @Expose()
   @Transform(({ obj }) => obj.cart && obj.cart.length > 0)
   get isInCart(): boolean {
-    console.log('isInCart', this);
     return this.cart && this.cart.length > 0;
   }
 
   @Expose()
   @Transform(({ obj }) => obj.favorites && obj.favorites.length > 0)
   get isFavorite(): boolean {
-    console.log('isFavorite', this.favorites);
     return this.favorites && this.favorites.length > 0;
   }
 }

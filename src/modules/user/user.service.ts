@@ -78,6 +78,30 @@ export class UserService extends BaseService {
     }
   }
 
+  async getUserLeadIds(userId: string): Promise<string[]> {
+    try {
+      const orders = await this.dataSource
+        .getRepository(OrderEntity)
+        .createQueryBuilder('order')
+        .leftJoinAndSelect('order.orderItems', 'orderItem')
+        .where('order.userId = :userId', { userId })
+        .select('orderItem.leadId')
+        .getMany();
+
+      const leadIds = orders
+        .flatMap((order) => order.orderItems)
+        .map((orderItem) => orderItem.lead)
+        .map((lead) => lead.id);
+
+      return Array.from(new Set(leadIds)); // Remove duplicates if any
+    } catch (err) {
+      this.logger.error(err.message, err.stack);
+      throw new InternalServerErrorException(
+        'Failed to fetch user lead IDs, Try again!',
+      );
+    }
+  }
+
   async delete(id: string) {
     const user = await this.findOne(id);
     return user ? this.userRepository.delete(id) : null;

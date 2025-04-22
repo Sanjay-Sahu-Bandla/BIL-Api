@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Req,
+  BadRequestException,
+} from '@nestjs/common';
 import { BaseController } from 'src/base/base.controller';
 import { JwtUserGuard } from 'src/guards/auth/user.guard';
 import { OrderService } from './order.service';
@@ -19,12 +27,28 @@ export class OrderController extends BaseController {
   }
 
   @Post()
-  async addOrder(@Body() createBulkOrderDto: CreateOrdersDto, @Req() req) {
-    const userId = req.user.id;
-    const newCartItem = await this.orderService.create(
-      createBulkOrderDto,
-      userId,
+  async addOrder(@Body() createBulkOrderDto: CreateOrdersDto) {
+    const newCartItem = await this.orderService.create(createBulkOrderDto);
+    return this.sendResponse(newCartItem, 'Order request created successfully');
+  }
+
+  @Post('confirm')
+  async confirmPayment(@Body() body, @Req() req) {
+    const isValid = this.orderService.verifySignature(
+      body.razorpay_order_id,
+      body.razorpay_payment_id,
+      body.razorpay_signature,
     );
-    return this.sendResponse(newCartItem, 'Order placed successfully');
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid payment signature');
+    }
+
+    // Save order like before (with razorPayId, etc.)
+    const orderStatus = await this.orderService.saveOrderToDb(
+      body,
+      req.user.id,
+    );
+    return this.sendResponse(orderStatus, 'Order placed successfully');
   }
 }
