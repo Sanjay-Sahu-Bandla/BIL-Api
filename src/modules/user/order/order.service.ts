@@ -61,13 +61,28 @@ export class OrderService extends BaseService {
     return expectedSignature === signature;
   }
 
-  async create(createBulkOrderDto: CreateOrdersDto) {
+  async create(createBulkOrderDto: CreateOrdersDto, userId: string) {
     const ordersToSave = [];
 
     for (const orderInfo of createBulkOrderDto.orders) {
       const leadInfo = await this.leadRepository.findOne({
         where: { id: orderInfo.leadId },
       });
+      const existingOrderItem = await this.orderRepository.findOne({
+        where: {
+          user: { id: userId },
+          orderItems: {
+            lead: { id: orderInfo.leadId },
+          },
+        },
+        relations: ['orderItems', 'orderItems.lead'],
+      });
+
+      if (existingOrderItem) {
+        throw new NotFoundException(
+          `Lead with ID ${orderInfo.leadId} has already been purchased`,
+        );
+      }
 
       if (!leadInfo) {
         throw new NotFoundException(

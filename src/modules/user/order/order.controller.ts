@@ -27,8 +27,12 @@ export class OrderController extends BaseController {
   }
 
   @Post()
-  async addOrder(@Body() createBulkOrderDto: CreateOrdersDto) {
-    const newCartItem = await this.orderService.create(createBulkOrderDto);
+  async addOrder(@Body() createBulkOrderDto: CreateOrdersDto, @Req() req) {
+    const userId = req.user.id;
+    const newCartItem = await this.orderService.create(
+      createBulkOrderDto,
+      userId,
+    );
     return this.sendResponse(newCartItem, 'Order request created successfully');
   }
 
