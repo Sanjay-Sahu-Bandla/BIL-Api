@@ -183,6 +183,7 @@ export class LeadService extends BaseService {
           `CONCAT(a.streetAddress, ', ', a.city, ', ', a.postcode, ', ', a.state) AS deliveredAddress`,
           'a.phone AS deliveryPhoneNumber', // Added delivery phone number
         ])
+        .orderBy('o.createdAt', 'DESC') // Sort by purchasedDate in descending order
         .getRawMany();
 
       return customerOrders;
