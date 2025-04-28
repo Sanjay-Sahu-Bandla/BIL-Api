@@ -13,6 +13,7 @@ import { LeadService } from './lead.service';
 import { BaseController } from 'src/base/base.controller';
 import { CreateLeadDto, UpdateLeadDto } from 'src/dto/lead.dto';
 import { JwtAdminGuard } from 'src/guards/auth/admin.guard';
+import { JwtInfoGuard } from 'src/guards/auth/info.guard';
 
 @Controller('lead')
 export class LeadController extends BaseController {
@@ -20,6 +21,7 @@ export class LeadController extends BaseController {
     super();
   }
 
+  @UseGuards(JwtInfoGuard)
   @Get()
   async getAllLeads(@Req() req: any) {
     const leads = await this.leadService.findAll(req);
@@ -40,9 +42,11 @@ export class LeadController extends BaseController {
     return this.sendResponse(customerOrders, 'Orders retrieved successfully');
   }
 
+  @UseGuards(JwtInfoGuard)
   @Get(':id')
-  async getLeadById(@Param('id') id: string) {
-    const lead = await this.leadService.findOne(id);
+  async getLeadById(@Param('id') id: string, @Req() req: any) {
+    const userId = req?.user?.id;
+    const lead = await this.leadService.findOne(id, userId);
     return this.sendResponse(lead, 'Lead retrieved successfully');
   }
 

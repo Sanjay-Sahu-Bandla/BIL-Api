@@ -4,7 +4,7 @@ import { CartEntity } from './cart.entity';
 import * as fs from 'fs';
 import * as path from 'path';
 import { APP_DROPDOWNS } from 'src/config/app.constants';
-import { Expose, Transform } from 'class-transformer';
+import { Exclude, Expose } from 'class-transformer';
 
 @Entity('leads')
 export class LeadEntity {
@@ -81,11 +81,13 @@ export class LeadEntity {
   @OneToMany(() => FavoriteEntity, (favorite) => favorite.lead, {
     cascade: true,
   })
+  @Exclude()
   favorites: FavoriteEntity[];
 
   @OneToMany(() => CartEntity, (cart) => cart.lead, {
     cascade: true,
   })
+  @Exclude()
   cart: CartEntity[];
 
   @Expose()
@@ -104,17 +106,5 @@ export class LeadEntity {
       (option) => option.value === this.locationId,
     );
     return location ? location.label : null;
-  }
-
-  @Expose()
-  @Transform(({ obj }) => obj.cart && obj.cart.length > 0)
-  get isInCart(): boolean {
-    return this.cart && this.cart.length > 0;
-  }
-
-  @Expose()
-  @Transform(({ obj }) => obj.favorites && obj.favorites.length > 0)
-  get isFavorite(): boolean {
-    return this.favorites && this.favorites.length > 0;
   }
 }

@@ -18,12 +18,18 @@ export class FavoriteService extends BaseService {
   }
 
   async findAll(userId: string) {
-    return await this.favoriteRepository.find({
+    const favorites = await this.favoriteRepository.find({
       where: {
         user: { id: userId },
       },
-      relations: ['lead', 'lead.favorites'],
+      relations: ['lead', 'lead.cart', 'lead.cart.user', 'lead.favorites'],
       order: { updatedAt: 'DESC' },
+    });
+    return favorites.map((favorite) => {
+      const lead = favorite.lead;
+      lead['isInCart'] = lead.cart.some((cart) => cart.user.id === userId);
+      lead['isFavorite'] = true; // All leads in favorites are favorites
+      return { ...favorite, lead };
     });
   }
 

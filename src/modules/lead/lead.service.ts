@@ -20,30 +20,46 @@ export class LeadService extends BaseService {
   }
 
   async findAll(req: any) {
+    let leads = [];
+    const userId = req?.user?.id || null;
     const locationId = req?.query?.locationId
       ? Number(req.query.locationId)
       : null;
+
     if (locationId) {
-      return await this.leadRepository.find({
+      leads = await this.leadRepository.find({
         where: { locationId: locationId, status: 'available' },
-        relations: ['cart', 'favorites'],
+        relations: ['cart', 'cart.user', 'favorites', 'favorites.user'],
+        order: { updatedAt: 'DESC' },
+      });
+    } else {
+      leads = await this.leadRepository.find({
+        relations: ['cart', 'cart.user', 'favorites', 'favorites.user'],
         order: { updatedAt: 'DESC' },
       });
     }
-    return await this.leadRepository.find({
-      relations: ['cart', 'favorites'],
-      order: { updatedAt: 'DESC' },
+    return leads.map((lead) => {
+      lead['isInCart'] = lead.cart.some((cart) => cart.user.id === userId);
+      lead['isFavorite'] = lead.favorites.some(
+        (favorite) => favorite.user.id === userId,
+      );
+      return lead;
     });
   }
 
-  async findOne(id: string) {
+  async findOne(id: string, userId: string | null = null) {
     const lead = await this.leadRepository.findOne({
       where: { id },
-      relations: ['cart', 'favorites'],
+      relations: ['cart', 'cart.user', 'favorites', 'favorites.user'],
     });
+
     if (!lead) {
       throw new NotFoundException(`Lead with ID ${id} not found`);
     }
+    lead['isInCart'] = lead.cart.some((cart) => cart.user.id === userId);
+    lead['isFavorite'] = lead.favorites.some(
+      (favorite) => favorite.user.id === userId,
+    );
     return lead;
   }
 
