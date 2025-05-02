@@ -92,11 +92,15 @@ export class LeadEntity {
 
   @Expose()
   get imageUrl(): string | null {
-    const serverAddress = process.env.SERVER_ADDRESS || 'http://localhost:3000';
-    const imagePath = `assets/leads/images/${this.id}/${this.fileName}`;
-    const fullPath = path.join(__dirname, `../../${imagePath}`);
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    const region = process.env.AWS_REGION;
+    const filePath = `images/${this.id}/${this.fileName}`;
 
-    return fs.existsSync(fullPath) ? `${serverAddress}/${imagePath}` : null;
+    if (!bucketName || !this.fileName || !this.id) {
+      return null;
+    }
+
+    return `https://${bucketName}.s3.${region}.amazonaws.com/${filePath}`;
   }
 
   @Expose()

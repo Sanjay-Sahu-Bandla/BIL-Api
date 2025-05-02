@@ -7,15 +7,20 @@ import { DataSource, Repository } from 'typeorm';
 import { BaseService } from 'src/base/base.service';
 import { LeadEntity } from 'src/entities/lead.entity';
 import { CreateLeadDto, UpdateLeadDto } from 'src/dto/lead.dto';
-import * as fs from 'fs';
-import * as path from 'path';
+import {
+  S3Client,
+  CopyObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 
 @Injectable()
 export class LeadService extends BaseService {
   private leadRepository: Repository<LeadEntity>;
+  private s3Client: S3Client;
 
   constructor(private dataSource: DataSource) {
     super();
+    this.s3Client = new S3Client({ region: process.env.AWS_REGION }); // Replace 'your-region' with your AWS region
     this.leadRepository = this.dataSource.getRepository(LeadEntity);
   }
 
@@ -70,7 +75,7 @@ export class LeadService extends BaseService {
     });
     try {
       const leadInfo = await this.leadRepository.save(lead);
-      this.moveLeadImage(leadInfo);
+      await this.moveLeadImage(leadInfo);
       return leadInfo;
     } catch (error) {
       console.log(error.message, error);
@@ -78,58 +83,51 @@ export class LeadService extends BaseService {
     }
   }
 
-  moveLeadImage(leadInfo: { fileName: string; id: string }) {
-    const leadsFolder = path.join(
-      __dirname,
-      `../../../assets/leads/images`,
-      leadInfo.id,
-    );
-    if (!fs.existsSync(leadsFolder)) {
-      fs.mkdirSync(leadsFolder, { recursive: true });
-    }
-
-    const { fileName } = leadInfo;
-    const tempFilePath = path.join(__dirname, `../../../temp/leads`, fileName);
-    const leadsFolderPath = path.join(leadsFolder, fileName);
-
-    if (!fs.existsSync(tempFilePath)) {
-      // throw new NotFoundException(`File ${fileName} not found in temp folder`);
-      console.log(`File ${fileName} not found in temp folder`);
-      return;
-    }
+  async moveLeadImage(leadInfo: { fileName: string; id: string }) {
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    const tempKey = `temp/${leadInfo.fileName}`;
+    const finalKey = `images/${leadInfo.id}/${leadInfo.fileName}`;
 
     try {
-      fs.renameSync(tempFilePath, leadsFolderPath);
+      const copyCommand = new CopyObjectCommand({
+        Bucket: bucketName,
+        CopySource: `${bucketName}/${tempKey}`,
+        Key: finalKey,
+        ACL: 'public-read',
+      });
+      await this.s3Client.send(copyCommand);
+
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: tempKey,
+      });
+      await this.s3Client.send(deleteCommand);
     } catch (error) {
-      throw new InternalServerErrorException(
-        'Failed to move file to leads folder',
-      );
+      console.error('Failed to move file in S3:', error);
+      throw new InternalServerErrorException('Failed to move file in S3.');
     }
   }
 
   removeLeadImage(leadInfo: { fileName: string; id: string }) {
-    const leadsFolder = path.join(
-      __dirname,
-      `../../../assets/leads/images`,
-      leadInfo.id,
-    );
-    const leadsFolderPath = path.join(leadsFolder, leadInfo.fileName);
+    const bucketName = process.env.AWS_S3_BUCKET_NAME;
+    const key = `images/${leadInfo.id}/${leadInfo.fileName}`;
 
-    if (fs.existsSync(leadsFolderPath)) {
-      try {
-        fs.unlinkSync(leadsFolderPath);
-      } catch (error) {
-        throw new InternalServerErrorException(
-          'Failed to remove file from leads folder',
-        );
-      }
+    try {
+      const deleteCommand = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+      });
+      this.s3Client.send(deleteCommand);
+    } catch (error) {
+      console.error('Failed to delete file from S3:', error);
+      throw new InternalServerErrorException('Failed to delete file from S3.');
     }
   }
 
   async update(id: string, updateLeadDto: UpdateLeadDto) {
     const leadInfo = await this.findOne(id);
     const updatedLead = this.leadRepository.merge(leadInfo, updateLeadDto);
-    this.moveLeadImage(updatedLead);
+    await this.moveLeadImage(updatedLead);
     return this.leadRepository.save(updatedLead);
   }
 

@@ -8,14 +8,15 @@ import {
 } from '@nestjs/common';
 import { BaseController } from 'src/base/base.controller';
 import { FileInterceptor } from '@nestjs/platform-express';
-import * as fs from 'fs';
-import * as path from 'path';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 @Controller('file-upload')
 export class FileUploadController extends BaseController {
+  private s3Client: S3Client;
+
   constructor() {
-    console.log('con');
     super();
+    this.s3Client = new S3Client({ region: process.env.AWS_REGION }); // Replace 'your-region' with your AWS region
   }
 
   @Post()
@@ -25,17 +26,25 @@ export class FileUploadController extends BaseController {
       throw new ConflictException('leadImage is required.');
     }
 
-    const leadsFolder = path.join(__dirname, '../../../temp/leads');
-    if (!fs.existsSync(leadsFolder)) {
-      fs.mkdirSync(leadsFolder, { recursive: true });
+    const bucketName = process.env.AWS_S3_BUCKET_NAME; // Replace with your S3 bucket name
+    const key = `temp/${file.originalname}`;
+
+    try {
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+      });
+      await this.s3Client.send(command);
+
+      return this.sendResponse(
+        { filePath: key },
+        'File uploaded successfully.',
+      );
+    } catch (error) {
+      console.error('Failed to upload file to S3:', error);
+      throw new ConflictException('Failed to upload file to S3.');
     }
-
-    const filePath = path.join(leadsFolder, file.originalname);
-    fs.writeFileSync(filePath, file.buffer);
-
-    return this.sendResponse(
-      { filePath: file.originalname },
-      'File uploaded successfully.',
-    );
   }
 }
