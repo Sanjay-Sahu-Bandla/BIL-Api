@@ -19,7 +19,7 @@ export class JwtAdminGuard implements CanActivate {
       return true;
     } catch (e) {
       if (e.name === 'TokenExpiredError') {
-        throw new Error(e.message);
+        throw new UnauthorizedException(e.message);
       }
       throw new UnauthorizedException();
     }

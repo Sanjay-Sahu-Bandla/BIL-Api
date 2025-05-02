@@ -194,7 +194,7 @@ export class LeadService extends BaseService {
           'u.username AS username',
           'u.email AS userEmail',
           'oi.price AS basePrice',
-          'ROUND(oi.price * 1.18, 2) AS purchasedAmount', // Including 18% GST, rounded to 2 decimals
+          'ROUND(oi.price * oi.quantity * 1.18, 2) AS purchasedAmount', // Including 18% GST, rounded to 2 decimals
           'o.createdAt AS purchasedDate',
           `CONCAT(a.streetAddress, ', ', a.city, ', ', a.postcode, ', ', a.state) AS deliveredAddress`,
           'a.phone AS deliveryPhoneNumber', // Added delivery phone number
