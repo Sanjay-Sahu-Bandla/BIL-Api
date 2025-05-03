@@ -95,7 +95,16 @@ export class LeadService extends BaseService {
         Key: finalKey,
         ACL: 'public-read',
       });
-      await this.s3Client.send(copyCommand);
+
+      try {
+        await this.s3Client.send(copyCommand);
+      } catch (error) {
+        if (error.name === 'NoSuchKey') {
+          console.error('File does not exist in S3:', error);
+          return;
+        }
+        throw error;
+      }
 
       const deleteCommand = new DeleteObjectCommand({
         Bucket: bucketName,
